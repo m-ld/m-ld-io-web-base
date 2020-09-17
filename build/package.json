@@ -1,0 +1,32 @@
+{
+  "name": "@m-ld/io-web-build",
+  "version": "0.1.0",
+  "description": "Base build library for m-ld.io web projects",
+  "main": "index.js",
+  "scripts": {
+    "prepublishOnly": "npm version $VERSION && git push"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-ld/m-ld-io-web-base.git"
+  },
+  "author": "gsvarovsky",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/m-ld/m-ld-io-web-base/issues"
+  },
+  "homepage": "https://github.com/m-ld/m-ld-io-web-base#readme",
+  "dependencies": {
+    "@11ty/eleventy": "^0.11.0",
+    "@fortawesome/fontawesome-free": "^5.14.0",
+    "autoprefixer": "^9.8.6",
+    "browserify": "^16.5.2",
+    "bulma": "^0.9.0",
+    "envify": "^4.1.0",
+    "minify-stream": "^2.1.0",
+    "node-sass": "^4.14.1",
+    "postcss-cli": "^7.1.2",
+    "tsify": "^5.0.2",
+    "typescript": "^4.0.2"
+  }
+}

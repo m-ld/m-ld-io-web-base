@@ -1,0 +1,45 @@
+{
+  "name": "@m-ld/io-web-runtime",
+  "version": "0.1.0",
+  "description": "Base runtime library for m-ld.io web projects",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./dist/dto": "./dist/dto.js",
+    "./dist/lambda": "./dist/lambda.js",
+    "./dist/client": "./dist/client.js"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "prepublishOnly": "npm run build && npm version $VERSION && git push"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-ld/m-ld-io-web-base.git"
+  },
+  "author": "gsvarovsky",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/m-ld/m-ld-io-web-base/issues"
+  },
+  "homepage": "https://github.com/m-ld/m-ld-io-web-base#readme",
+  "devDependencies": {
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "@types/grecaptcha": "^3.0.1",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/modernizr": "^3.5.3",
+    "@types/node-fetch": "^2.5.7",
+    "@vercel/node": "^1.8.2",
+    "@zeit/fetch": "^6.0.0",
+    "grecaptcha": "^1.0.3",
+    "jsonwebtoken": "^8.5.1",
+    "loglevel": "^1.7.0",
+    "loglevel-plugin-remote": "^0.6.8",
+    "logzio-nodejs": "^2.0.2",
+    "node-fetch": "^2.6.1"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "build": {
+    "env": {
+      "NPM_TOKEN": "@npm-token",
+      "RECAPTCHA_SITE": "<site>"
+    }
+  },
+  "env": {
+    "RECAPTCHA_SECRET": "@recaptcha-secret",
+    "WORDNIK_API_KEY": "@wordnik-api-key",
+    "LOGZ_KEY": "@logz-key"
+  }
+}

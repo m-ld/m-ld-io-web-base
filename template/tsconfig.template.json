@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "declaration": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": {
+      "loglevel-plugin-remote": [
+        "node_modules/@m-ld/io-web-runtime/types/loglevel-plugin-remote.d.ts"
+      ]
+    }
+  }
+}

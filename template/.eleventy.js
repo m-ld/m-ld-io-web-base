@@ -1,0 +1,1 @@
+module.exports = require('@m-ld/io-web-build').default11tyConfig
