@@ -5,10 +5,10 @@ import { getLogger, LogLevelNumbers, LoggingMethod } from 'loglevel';
 import { createLogger, ILogzioLogger } from 'logzio-nodejs';
 import { JsonLog } from 'loglevel-plugin-remote';
 import { verify, sign, Secret, SignOptions, SignCallback } from 'jsonwebtoken';
-import SetupFetch from '@zeit/fetch';
-import { FetchOptions } from '@zeit/fetch';
 import { URL } from 'url';
-export const fetch = SetupFetch();
+import { Fetch, FetchOptions } from '@zeit/fetch';
+// Using require() rather than import default to avoid having to use esModuleInterop
+export const fetch: Fetch = require('@zeit/fetch')();
 
 export * from './dto';
 
