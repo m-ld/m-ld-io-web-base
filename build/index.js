@@ -7,9 +7,10 @@ const sass = require('node-sass');
 const postcss = require('postcss');
 const envify = require('envify');
 
-function packageDir(module) {
-  return dirname(require.resolve(module + '/package.json'));
+function packageDir(module, localRequire) {
+  return dirname((localRequire || require).resolve(module + '/package.json'));
 }
+exports.packageDir = packageDir;
 
 exports.default11tyConfig = function (config) {
   config.addPassthroughCopy({
@@ -17,6 +18,7 @@ exports.default11tyConfig = function (config) {
   });
   config.addPassthroughCopy('./src/modernizr-custom.js');
   config.addWatchTarget('./lib/');
+  config.addWatchTarget('./src/*.ts');
   // Do not ghost events across browsers - defeats the point of m-ld
   config.setBrowserSyncConfig({ ghostMode: false });
   config.setLiquidOptions({ dynamicPartials: true });
