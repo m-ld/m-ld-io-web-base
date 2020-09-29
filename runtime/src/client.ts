@@ -4,6 +4,8 @@ import * as remoteLog from 'loglevel-plugin-remote';
 
 export * from './dto';
 
+let remoteLogApplied = false;
+
 export function configureLogging(session: Session) {
   if (session.logLevel != null)
     LOG.setLevel(session.logLevel);
@@ -16,10 +18,12 @@ export function configureLogging(session: Session) {
     },
     format: remoteLog.json
   });
+  remoteLogApplied = true;
 }
 
 export function setLogToken(token: string) {
-  remoteLog.setToken(token);
+  if (remoteLogApplied)
+    remoteLog.setToken(token);
 }
 
 export function modernizd(asyncFeatures: string[]): Promise<void> {
