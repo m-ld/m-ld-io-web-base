@@ -30,7 +30,7 @@ exports.default11tyConfig = function (config) {
 
 exports.renderTs = function ({ tsPath, tsConfig }) {
   const dev = process.env.NODE_ENV == 'development';
-  let b = browserify(tsPath, { debug: dev })
+  let b = browserify(tsPath, { debug: dev, ignoreMissing: true })
     .plugin('tsify', tsConfig.compilerOptions)
     .transform(envify, { global: true });
 
