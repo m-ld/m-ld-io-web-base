@@ -1,15 +1,15 @@
 import { DOMAIN_HEADER, ID_HEADER, Session } from './dto';
-import * as LOG from 'loglevel';
+import { RootLogger } from 'loglevel';
 import * as remoteLog from 'loglevel-plugin-remote';
 
 export * from './dto';
 
 let remoteLogApplied = false;
 
-export function configureLogging(session: Session) {
+export function configureLogging(session: Session, logger: RootLogger) {
   if (session.logLevel != null)
-    LOG.setLevel(session.logLevel);
-  remoteLog.apply(LOG, {
+    logger.setLevel(session.logLevel);
+  remoteLog.apply(logger, {
     url: '/api/log',
     token: session.token,
     headers: {
