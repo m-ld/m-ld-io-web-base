@@ -151,7 +151,8 @@ export function signJwt(
   options?: SignOptions
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const cb: SignCallback = (err, token) => err ? reject(err) : resolve(token);
+    const cb: SignCallback = (err, token) => err || !token ?
+      reject(err || 'no signature') : resolve(token);
     if (options != null)
       sign(payload, secretOrPrivateKey, options, cb);
     else
