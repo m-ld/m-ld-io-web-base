@@ -1,6 +1,6 @@
 {
   "name": "@m-ld/io-web-runtime",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Base runtime library for m-ld.io web projects",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
