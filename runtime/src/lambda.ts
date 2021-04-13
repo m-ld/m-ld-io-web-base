@@ -114,7 +114,7 @@ function getAuthorisedRequest<Q extends AuthorisedRequest>(req: NowRequest): Q {
 }
 
 function hasAuthorisation<Q extends AuthorisedRequest>(jsonReq: Partial<Q>): jsonReq is Q {
-   // TODO: Validate other Q fields
+  // TODO: Validate other Q fields
   return jsonReq['@id'] != null &&
     jsonReq['@domain'] != null &&
     jsonReq.token != null &&
@@ -162,7 +162,8 @@ export function signJwt(
 
 export class RecaptchaAuth implements Auth {
   constructor(
-    private readonly secret: string | undefined) {
+    private readonly secret: string | undefined,
+    private readonly threshold = 0.5) {
   }
 
   async authorise(token: string): Promise<void> {
@@ -187,8 +188,8 @@ export class RecaptchaAuth implements Auth {
     if (siteVerify.action != 'config')
       throw new HttpError(403, `reCAPTCHA action mismatch, received '${siteVerify.action}'`);
 
-    if (siteVerify.score < 0.5)
-      throw new HttpError(403, `reCAPTCHA check failed`);
+    if (siteVerify.score < this.threshold)
+      throw new HttpError(403, `reCAPTCHA check failed, ${siteVerify.score} < ${this.threshold}`);
   }
 }
 
