@@ -133,7 +133,7 @@ export interface Auth {
 
 export class JwtAuth implements Auth {
   constructor(
-    private readonly secret: string | undefined) {
+    private readonly secret: EnvVar) {
   }
 
   async authorise(token: string): Promise<void> {
@@ -160,22 +160,45 @@ export function signJwt(
   });
 }
 
+/** String from environment variable */
+type EnvVar = string | undefined;
+
 export class RecaptchaAuth implements Auth {
+  private readonly secrets: { v2?: EnvVar, v3?: EnvVar };
+
   constructor(
-    private readonly secret: string | undefined,
+    secret: EnvVar | { v2: EnvVar, v3: EnvVar },
     private readonly threshold = 0.5) {
+    if (typeof secret == 'string')
+      this.secrets = { v3: secret };
+    else if (secret != null)
+      this.secrets = secret;
+    else
+      this.secrets = {};
   }
 
+  /**
+   * @param token the reCAPTCHA response from the client. If using v2, prefix
+   * with `v2:`.
+   */
   async authorise(token: string): Promise<void> {
-    if (this.secret == null)
+    let secret: EnvVar = this.secrets.v3;
+    const v2 = token.startsWith('v2:');
+    if (v2) {
+      secret = this.secrets.v2;
+      token = token.slice('v2:'.length);
+    }
+    if (secret == null)
       throw 'Bad lambda configuration';
 
     // Validate the token, see https://developers.google.com/recaptcha/docs/v3
     const siteVerify = await fetchJson<{
-      success: boolean, action: string, score: number, 'error-codes': string[]
-    }>(
-      'https://www.google.com/recaptcha/api/siteverify', {
-      secret: this.secret,
+      success: boolean,
+      action?: string, // applicable to v3
+      score?: number, // applicable to v3
+      'error-codes': string[]
+    }>('https://www.google.com/recaptcha/api/siteverify', {
+      secret,
       response: token
     }, { method: 'POST' });
 
@@ -185,11 +208,14 @@ export class RecaptchaAuth implements Auth {
     if (!siteVerify.success)
       throw `reCAPTCHA failed with ${siteVerify['error-codes']}`;
 
-    if (siteVerify.action != 'config')
-      throw new HttpError(403, `reCAPTCHA action mismatch, received '${siteVerify.action}'`);
+    if (!v2) {
+      // v3 has a score and must have the correct action
+      if (siteVerify.action !== 'config')
+        throw new HttpError(403, `reCAPTCHA action mismatch, received '${siteVerify.action}'`);
 
-    if (siteVerify.score < this.threshold)
-      throw new HttpError(403, `reCAPTCHA check failed, ${siteVerify.score} < ${this.threshold}`);
+      if ((siteVerify.score ?? 0) < this.threshold)
+        throw new HttpError(403, `reCAPTCHA check failed, ${siteVerify.score} < ${this.threshold}`);
+    }
   }
 }
 

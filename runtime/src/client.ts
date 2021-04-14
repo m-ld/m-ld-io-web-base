@@ -51,4 +51,23 @@ export class Grecaptcha {
       throw new Error('Bad configuration: reCAPTCHA site missing');
     return grecaptcha.execute(site, { action });
   }
+
+  static render(container: HTMLElement, parameters?: ReCaptchaV2.Parameters): Promise<string> {
+    const sitekey = process.env.RECAPTCHA_V2_SITE;
+    return new Promise((resolve, reject) => {
+      grecaptcha.render(container, {
+        sitekey,
+        callback: resolve,
+        'expired-callback': () => reject(new GrecaptchaExpired()),
+        'error-callback': () => reject(new Error('reCAPTCHA failed')),
+        ...parameters
+      });
+    });
+  }
+}
+
+export class GrecaptchaExpired extends Error {
+  constructor() {
+    super('reCAPTCHA expired');
+  }
 }
