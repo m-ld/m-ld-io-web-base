@@ -1,4 +1,4 @@
-import { NowResponse, NowRequest } from '@vercel/node'
+import { VercelResponse, VercelRequest } from '@vercel/node'
 import { AuthorisedRequest, ID_HEADER, DOMAIN_HEADER } from './dto';
 import { LogLevelDesc } from 'loglevel';
 import { getLogger, LogLevelNumbers, LoggingMethod } from 'loglevel';
@@ -80,7 +80,7 @@ LOG.setLevel(process.env.LOG as LogLevelDesc || 'warn');
  */
 export function responder<Q extends AuthorisedRequest, R>(
   auth: Auth, handler: (q: Q, remoteLog: RemoteLog) => Promise<R>) {
-  return async (req: NowRequest, res: NowResponse) => {
+  return async (req: VercelRequest, res: VercelResponse) => {
     try {
       const authReq = getAuthorisedRequest<Q>(req);
       remoteLog = new RemoteLog(authReq);
@@ -98,7 +98,7 @@ export function responder<Q extends AuthorisedRequest, R>(
   }
 }
 
-function getAuthorisedRequest<Q extends AuthorisedRequest>(req: NowRequest): Q {
+function getAuthorisedRequest<Q extends AuthorisedRequest>(req: VercelRequest): Q {
   const jsonReq: Partial<Q> = req.body;
   const headerToken = req.headers.authorization != null ?
     /Bearer\s(.+)/.exec(req.headers.authorization)?.[1] : null;
@@ -121,11 +121,14 @@ function hasAuthorisation<Q extends AuthorisedRequest>(jsonReq: Partial<Q>): jso
     jsonReq.origin != null;
 }
 
-function ifHeader(req: NowRequest, key: string, cb: (value: string) => void) {
+function ifHeader(req: VercelRequest, key: string, cb: (value: string) => void) {
   const value = req.headers[key];
   if (value != null && value.length)
     cb(Array.isArray(value) ? value[0] : value);
 }
+
+/** String from environment variable */
+type EnvVar = string | undefined;
 
 export interface Auth {
   authorise(token: string): Promise<void>;
@@ -140,7 +143,8 @@ export class JwtAuth implements Auth {
     return new Promise((resolve, reject) => {
       if (this.secret == null)
         throw 'Bad lambda configuration';
-      verify(token, this.secret, err => err ? reject(err) : resolve());
+      verify(token, this.secret, err => err ?
+        reject(new HttpError(401, `${err}`)) : resolve());
     });
   }
 }
@@ -160,62 +164,68 @@ export function signJwt(
   });
 }
 
-/** String from environment variable */
-type EnvVar = string | undefined;
-
-export class RecaptchaAuth implements Auth {
-  private readonly secrets: { v2?: EnvVar, v3?: EnvVar };
-
+export abstract class RecaptchaAuth implements Auth {
   constructor(
-    secret: EnvVar | { v2: EnvVar, v3: EnvVar },
-    private readonly threshold = 0.5) {
-    if (typeof secret == 'string')
-      this.secrets = { v3: secret };
-    else if (secret != null)
-      this.secrets = secret;
-    else
-      this.secrets = {};
+    private readonly secret: EnvVar) {
   }
 
   /**
-   * @param token the reCAPTCHA response from the client. If using v2, prefix
-   * with `v2:`.
+   * @param token the reCAPTCHA response from the client.
    */
-  async authorise(token: string): Promise<void> {
-    let secret: EnvVar = this.secrets.v3;
-    const v2 = token.startsWith('v2:');
-    if (v2) {
-      secret = this.secrets.v2;
-      token = token.slice('v2:'.length);
-    }
-    if (secret == null)
+  protected async verify<T extends object = {}>(token: string): Promise<T> {
+    if (this.secret == null)
       throw 'Bad lambda configuration';
 
-    // Validate the token, see https://developers.google.com/recaptcha/docs/v3
     const siteVerify = await fetchJson<{
       success: boolean,
-      action?: string, // applicable to v3
-      score?: number, // applicable to v3
       'error-codes': string[]
-    }>('https://www.google.com/recaptcha/api/siteverify', {
-      secret,
+    } & T>('https://www.google.com/recaptcha/api/siteverify', {
+      secret: this.secret,
       response: token
     }, { method: 'POST' });
 
     if (typeof siteVerify === 'string')
-      throw `reCAPTCHA failed with ${siteVerify}`;
+      throw `reCAPTCHA verification failed with ${siteVerify}`;
 
     if (!siteVerify.success)
-      throw `reCAPTCHA failed with ${siteVerify['error-codes']}`;
+      throw `reCAPTCHA verification failed with ${siteVerify['error-codes']}`;
 
-    if (!v2) {
-      // v3 has a score and must have the correct action
-      if (siteVerify.action !== 'config')
-        throw new HttpError(403, `reCAPTCHA action mismatch, received '${siteVerify.action}'`);
+    return siteVerify;
+  }
 
-      if ((siteVerify.score ?? 0) < this.threshold)
-        throw new HttpError(403, `reCAPTCHA check failed, ${siteVerify.score} < ${this.threshold}`);
-    }
+  abstract authorise(token: string): Promise<void>;
+}
+
+export class RecaptchaV3Auth extends RecaptchaAuth {
+  constructor(secret: EnvVar,
+    private readonly threshold = 0.5) {
+    super(secret);
+  }
+
+  async authorise(token: string): Promise<void> {
+    // Validate the token, see https://developers.google.com/recaptcha/docs/v3
+    const siteVerify = await this.verify<{
+      action: string,
+      score: number
+    }>(token);
+
+    // v3 has a score and must have the correct action
+    if (siteVerify.action !== 'config')
+      throw new HttpError(403, `reCAPTCHA action mismatch, received '${siteVerify.action}'`);
+
+    if (siteVerify.score < this.threshold)
+      throw new HttpError(401, `reCAPTCHA check failed, ${siteVerify.score} < ${this.threshold}`);
+  }
+}
+
+export class RecaptchaV2Auth extends RecaptchaAuth {
+  constructor(secret: EnvVar) {
+    super(secret);
+  }
+
+  async authorise(token: string): Promise<void> {
+    // Validate the token, see https://developers.google.com/recaptcha/docs/verify
+    await this.verify(token);
   }
 }
 
@@ -225,7 +235,7 @@ export class HttpError {
     private readonly statusMessage: string) {
   }
 
-  respond(res: NowResponse): NowResponse {
+  respond(res: VercelResponse): VercelResponse {
     if (this.statusCode >= 500) {
       LOG.warn(this);
       return res.status(500).send('Internal server error');
@@ -234,7 +244,7 @@ export class HttpError {
     }
   }
 
-  static respond(res: NowResponse, err: any): NowResponse {
+  static respond(res: VercelResponse, err: any): VercelResponse {
     const httpError = err instanceof HttpError ? err : new HttpError(500, `${err}`);
     return httpError.respond(res);
   }

@@ -1,11 +1,10 @@
 {
   "name": "@m-ld/io-web-runtime",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Base runtime library for m-ld.io web projects",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
     "./dist/dto": "./dist/dto.js",
     "./dist/lambda": "./dist/lambda.js",
     "./dist/client": "./dist/client.js"
