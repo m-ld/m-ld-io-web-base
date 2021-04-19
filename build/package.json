@@ -1,6 +1,6 @@
 {
   "name": "@m-ld/io-web-build",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Base build library for m-ld.io web projects",
   "main": "index.js",
   "scripts": {

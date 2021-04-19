@@ -53,5 +53,7 @@ exports.renderScss = async function ({ scssPath }) {
       join(packageDir('@fortawesome/fontawesome-free'), 'scss')
     ]
   });
-  return postcss([require('autoprefixer')]).process(css);
+  const result = await postcss([require('autoprefixer')]).process(css);
+  result.warnings().forEach(console.warn);
+  return result.css;
 }
