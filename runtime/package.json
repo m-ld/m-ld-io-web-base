@@ -6,8 +6,12 @@
   "types": "dist/index.d.ts",
   "exports": {
     "./dist/dto": "./dist/dto.js",
-    "./dist/lambda": "./dist/lambda.js",
-    "./dist/client": "./dist/client.js"
+    "./dist/lambda": "./dist/lambda/index.js",
+    "./dist/server/recaptcha": "./dist/server/recaptcha.js",
+    "./dist/server/words": "./dist/server/words.js",
+    "./dist/server/ably": "./dist/server/ably.js",
+    "./dist/server/xirsys": "./dist/server/xirsys.js",
+    "./dist/client": "./dist/client/index.js"
   },
   "scripts": {
     "clean": "rm -rf dist",

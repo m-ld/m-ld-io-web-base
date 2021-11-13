@@ -1,8 +1,8 @@
-import { DOMAIN_HEADER, ID_HEADER, Session } from './dto';
+import { DOMAIN_HEADER, ID_HEADER, Session } from '../dto';
 import { RootLogger } from 'loglevel';
 import * as remoteLog from 'loglevel-plugin-remote';
 
-export * from './dto';
+export * from '../dto';
 
 let remoteLogApplied = false;
 
