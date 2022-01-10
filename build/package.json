@@ -1,6 +1,6 @@
 {
   "name": "@m-ld/io-web-build",
-  "version": "0.1.5",
+  "version": "0.1.6-0",
   "description": "Base build library for m-ld.io web projects",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "bulma": "^0.9.1",
     "envify": "^4.1.0",
     "minify-stream": "^2.1.0",
-    "node-sass": "^5.0.0",
+    "node-sass": "^6.0.1",
     "postcss": "^8.1.10",
     "postcss-cli": "^8.3.0",
     "tsify": "^5.0.2",
