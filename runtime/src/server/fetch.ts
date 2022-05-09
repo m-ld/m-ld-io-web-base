@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import { Fetch, FetchOptions } from '@zeit/fetch';
-import { VercelResponse } from '@vercel/node';
+import type { VercelResponse } from '../vercel';
 import { LOG } from './logging';
 
 // Using require() rather than import default to avoid having to use esModuleInterop

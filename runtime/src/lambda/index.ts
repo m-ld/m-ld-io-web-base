@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelApiHandler, VercelRequest } from '../vercel';
 import { AuthorisedRequest, DOMAIN_HEADER, ID_HEADER } from '../dto';
 import { HttpError } from '../server/fetch';
 import { JsonLogger, withRemoteLogging } from '../server/logging';
@@ -20,8 +20,8 @@ export const SERVICE_TIMEOUT = 10000 / 2;
  * service can be just strings.
  */
 export function responder<Q extends AuthorisedRequest, R>(
-  auth: Auth, handler: (q: Q, remoteLog: JsonLogger) => Promise<R>) {
-  return async (req: VercelRequest, res: VercelResponse) => {
+  auth: Auth, handler: (q: Q, remoteLog: JsonLogger) => Promise<R>): VercelApiHandler {
+  return async (req, res) => {
     try {
       const authReq = getAuthorisedRequest<Q>(req);
       const jsonRes = await withRemoteLogging(authReq, async (remoteLog) => {
