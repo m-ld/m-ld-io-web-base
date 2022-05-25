@@ -1,11 +1,11 @@
-import { Secret, sign, SignCallback, SignOptions, verify } from 'jsonwebtoken';
+import { JwtPayload, Secret, sign, SignCallback, SignOptions, verify } from 'jsonwebtoken';
 import { HttpError } from './fetch';
 
 /** String from environment variable */
 export type EnvVar = string | undefined;
 
 export interface Auth {
-  authorise(token: string): Promise<void>;
+  authorise(token: string): Promise<unknown>;
 }
 
 export class JwtAuth implements Auth {
@@ -13,12 +13,13 @@ export class JwtAuth implements Auth {
     private readonly secret: EnvVar) {
   }
 
-  async authorise(token: string): Promise<void> {
+  async authorise(token: string): Promise<JwtPayload | string> {
     return new Promise((resolve, reject) => {
       if (this.secret == null)
         throw 'Bad lambda configuration';
-      verify(token, this.secret, err => err ?
-        reject(new HttpError(401, `${err}`)) : resolve());
+      verify(token, this.secret, (err, payload) => err ?
+        reject(new HttpError(401, `${err}`)) :
+        resolve(payload!));
     });
   }
 }
