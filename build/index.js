@@ -1,7 +1,7 @@
 const { join, dirname } = require('path');
 const { promisify } = require('util');
 const browserify = require('browserify');
-const minify = require('minify-stream');
+const { minify } = require('terser');
 const concat = require('concat-stream');
 const sass = require('node-sass');
 const postcss = require('postcss');
@@ -28,21 +28,17 @@ exports.default11tyConfig = function (config) {
   }
 }
 
-exports.renderTs = function ({ tsPath, tsConfig }) {
-  const dev = process.env.NODE_ENV == 'development';
-  let b = browserify(tsPath, { debug: dev, ignoreMissing: true })
+exports.renderTs = async function ({ tsPath, tsConfig }) {
+  const dev = process.env.NODE_ENV === 'development';
+  const b = browserify(tsPath, { debug: dev, ignoreMissing: true })
     .plugin('tsify', tsConfig.compilerOptions)
     .transform(envify, { global: true });
 
-  return new Promise((resolve, reject) => {
-    const demoJs = concat(resolve);
-    let demoStream = b.bundle();
-    if (!dev)
-      demoStream = demoStream.pipe(minify({ sourceMap: false }));
-
+  return new Promise(async (resolve, reject) => {
+    const demoStream = b.bundle();
     demoStream.on('error', reject);
-    demoStream.pipe(demoJs);
-  });
+    demoStream.pipe(concat(resolve));
+  }).then(async js => dev ? js : (await minify(js.toString())).code);
 }
 
 exports.renderScss = async function ({ scssPath }) {
