@@ -1,4 +1,4 @@
-import { JwtPayload, Secret, sign, SignCallback, SignOptions, verify } from 'jsonwebtoken';
+import { JwtPayload, verify } from 'jsonwebtoken';
 import { HttpError } from './fetch';
 
 /** String from environment variable */
@@ -7,6 +7,8 @@ export type EnvVar = string | undefined;
 export interface Auth {
   authorise(token: string): Promise<unknown>;
 }
+
+export { signJwt } from './jwt';
 
 export class JwtAuth implements Auth {
   constructor(
@@ -22,21 +24,6 @@ export class JwtAuth implements Auth {
         resolve(payload!));
     });
   }
-}
-
-export function signJwt(
-  payload: string | Buffer | object,
-  secretOrPrivateKey: Secret,
-  options?: SignOptions
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const cb: SignCallback = (err, token) => err || !token ?
-      reject(err || 'no signature') : resolve(token);
-    if (options != null)
-      sign(payload, secretOrPrivateKey, options, cb);
-    else
-      sign(payload, secretOrPrivateKey, cb);
-  });
 }
 
 export class PrefixAuth implements Auth {

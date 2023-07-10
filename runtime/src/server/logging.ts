@@ -1,4 +1,4 @@
-import { getLogger, LoggingMethod, LogLevelDesc, LogLevelNumbers } from 'loglevel';
+import { getLogger, LoggingMethod, LogLevelDesc, LogLevelNames, LogLevelNumbers } from 'loglevel';
 import { createLogger, ILogzioLogger } from 'logzio-nodejs';
 import { AuthorisedRequest } from '../dto';
 import { HttpError } from './fetch';
@@ -70,7 +70,10 @@ export const LOG = getLogger('lambda');
 
 const localFactory = LOG.methodFactory;
 LOG.methodFactory = function (
-  methodName: string, level: LogLevelNumbers, loggerName: string): LoggingMethod {
+  methodName: LogLevelNames,
+  level: LogLevelNumbers,
+  loggerName: string
+): LoggingMethod {
   const localMethod = localFactory(methodName, level, loggerName);
   return function (...message: any[]) {
     // Log locally (to console)
