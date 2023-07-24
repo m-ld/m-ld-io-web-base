@@ -1,6 +1,6 @@
 {
   "name": "@m-ld/io-web-build",
-  "version": "0.1.8",
+  "version": "0.2.0-0",
   "description": "Base build library for m-ld.io web projects",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/m-ld/m-ld-io-web-base#readme",
   "dependencies": {
-    "@11ty/eleventy": "^0.12.1",
+    "@11ty/eleventy": "^2.0.1",
     "@fortawesome/fontawesome-free": "^5.15.1",
     "autoprefixer": "^10.0.4",
     "browserify": "^17.0.0",

@@ -12,20 +12,22 @@ function packageDir(module, localRequire) {
 }
 exports.packageDir = packageDir;
 
-exports.default11tyConfig = function (config) {
-  config.addPassthroughCopy({
-    [join(packageDir('@fortawesome/fontawesome-free'), 'webfonts')]: 'webfonts'
-  });
-  config.addPassthroughCopy('./src/modernizr-custom.js');
-  config.addWatchTarget('./lib/');
-  config.addWatchTarget('./src/*.ts');
-  // Do not ghost events across browsers - defeats the point of m-ld
-  config.setBrowserSyncConfig({ ghostMode: false });
-  config.setLiquidOptions({ dynamicPartials: true });
-  return {
-    dir: { input: 'src' },
-    templateFormats: ['liquid', 'html', 'svg', 'png', 'md', '11ty.js']
+exports.default11tyConfig = function (eleventy, config) {
+  config ??= {};
+  (config.dir ??= {}).input ??= 'src';
+  (config.templateFormats ??= []).push('liquid', 'html', 'svg', 'png', 'md', '11ty.js', '11ty.cjs');
+  if (config.fontawesome !== false) {
+    eleventy.addPassthroughCopy({
+      [join(packageDir('@fortawesome/fontawesome-free'), 'webfonts')]: 'webfonts'
+    });
   }
+  eleventy.addPassthroughCopy(join(config.dir.input, 'modernizr-custom.js'));
+  eleventy.addWatchTarget('./lib/');
+  eleventy.addWatchTarget(join(config.dir.input, '*.ts'));
+  // Do not ghost events across browsers - defeats the point of m-ld
+  eleventy.setBrowserSyncConfig({ ghostMode: false });
+  eleventy.setLiquidOptions({ dynamicPartials: true });
+  return config;
 }
 
 exports.renderTs = async function ({ tsPath, tsConfig }) {
